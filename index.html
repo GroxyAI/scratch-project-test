@@ -6,38 +6,38 @@
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
     <title>Scratch Playground</title>
     <style>
-        body { display: grid; grid-template-columns: 25% 50% 25%; height: 100vh; margin: 0; font-family: Arial, sans-serif; }
-        #toolbox { padding: 10px; background: #f0f0f0; }
-        #blocklyDiv { border: 5px solid; border-image: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet) 1; }
-        #stage { background: lightblue; position: relative; display: flex; align-items: center; justify-content: center; }
-        #sprite { width: 100px; position: absolute; transition: 0.5s; }
-        h2 { background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet); padding: 10px; color: white; }
+        body { display: grid; grid-template-columns: 25% 50% 25%; grid-template-rows: 10% 90%; height: 100vh; margin: 0; font-family: Arial, sans-serif; }
+        #toolbar { grid-column: span 3; background: #ffcc00; padding: 10px; text-align: center; font-weight: bold; }
+        #toolbox { padding: 10px; background: #f0f0f0; overflow-y: auto; }
+        #blocklyDiv { border: 5px solid #000; background: #fff; overflow: hidden; }
+        #stage { background: #87CEEB; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        #sprite { width: 100px; position: absolute; transition: 0.5s; cursor: grab; }
     </style>
 </head>
 <body>
 
-    <!-- Toolbox Sidebar -->
+    <!-- Toolbar -->
+    <div id="toolbar">Scratch Playground - Static Edition</div>
+
+    <!-- Sidebar: Blocks -->
     <div id="toolbox">
         <h2>Scratch Blocks</h2>
         <xml id="toolboxXML">
             <block type="move_sprite"></block>
-            <block type="turn_sprite"></block>
-            <block type="jump_sprite"></block>
-            <block type="change_background"></block>
+            <block type="set_env_variable"></block>
         </xml>
     </div>
 
-    <!-- Coding Area -->
+    <!-- Blockly Coding Area -->
     <div id="blocklyDiv"></div>
 
-    <!-- Stage & Preview Area -->
+    <!-- Stage: Sprite Area -->
     <div id="stage">
-        <h2>Stage Preview</h2>
         <img id="sprite" src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg" alt="Scratch Cat">
     </div>
 
     <script>
-        // Define Scratch-Like Blocks
+        // Define Scratch-like Blocks
         Blockly.defineBlocksWithJsonArray([
             {
                 "type": "move_sprite",
@@ -48,30 +48,23 @@
                 "colour": 230
             },
             {
-                "type": "turn_sprite",
-                "message0": "rotate sprite %1 degrees",
-                "args0": [{ "type": "field_angle", "name": "ANGLE", "value": 90 }],
-                "previousStatement": null,
-                "nextStatement": null,
-                "colour": 180
-            },
-            {
-                "type": "jump_sprite",
-                "message0": "jump sprite %1 pixels",
-                "args0": [{ "type": "field_number", "name": "HEIGHT", "value": 100 }],
-                "previousStatement": null,
-                "nextStatement": null,
-                "colour": 150
-            },
-            {
-                "type": "change_background",
-                "message0": "set background color to %1",
-                "args0": [{ "type": "field_colour", "name": "COLOR", "colour": "#ffcc00" }],
+                "type": "set_env_variable",
+                "message0": "set ENV variable %1 = %2",
+                "args0": [
+                    { "type": "field_input", "name": "VAR_NAME", "text": "API_KEY" },
+                    { "type": "field_input", "name": "VAR_VALUE", "text": "your_api_here" }
+                ],
                 "previousStatement": null,
                 "nextStatement": null,
                 "colour": 100
             }
         ]);
+
+        Blockly.JavaScript['set_env_variable'] = function(block) {
+            var varName = block.getFieldValue('VAR_NAME');
+            var varValue = block.getFieldValue('VAR_VALUE');
+            return `window.${varName} = '${varValue}';\n`;
+        };
 
         // Inject Blockly Workspace
         var workspace = Blockly.inject('blocklyDiv', {
@@ -86,4 +79,3 @@
 
 </body>
 </html>
-
