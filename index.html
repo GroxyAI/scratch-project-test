@@ -6,35 +6,17 @@
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
     <title>Scratch Playground</title>
     <style>
-        /* Page Layout */
         body { display: flex; height: 100vh; margin: 0; font-family: Arial, sans-serif; }
         #toolbox { width: 25%; background: #f0f0f0; padding: 10px; }
-        #blocklyDiv { width: 50%; height: 100vh; }
+        #blocklyDiv { width: 50%; height: 100vh; border: 10px solid; border-image: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet) 1; }
         #preview { width: 25%; display: flex; flex-direction: column; text-align: center; }
-
-        /* Styled Header */
-        h2 {
-            color: white;
-            background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet);
-            padding: 10px;
-        }
-
-        /* Scratch-like Blocks */
-        .scratch-block {
-            background: #ffcc00;
-            border-radius: 5px;
-            padding: 10px;
-            font-weight: bold;
-        }
-
-        /* Code Output */
+        h2 { color: white; background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet); padding: 10px; }
         #codeOutput { padding: 10px; border: 1px solid #ccc; text-align: left; }
         iframe { width: 100%; height: 100%; border: none; background: white; }
     </style>
 </head>
 <body>
 
-    <!-- Toolbox Section -->
     <div id="toolbox">
         <h2>Scratch Blocks</h2>
         <xml id="toolboxXML">
@@ -44,10 +26,8 @@
         </xml>
     </div>
 
-    <!-- Blockly Workspace -->
     <div id="blocklyDiv"></div>
 
-    <!-- Output & Preview Section -->
     <div id="preview">
         <h2>Made with Scratch Playground</h2>
         <pre id="codeOutput"></pre>
@@ -56,7 +36,7 @@
     </div>
 
     <script>
-        // Define Scratch-like custom blocks
+        // Define custom Scratch-like blocks
         Blockly.defineBlocksWithJsonArray([
             {
                 "type": "move_forward",
@@ -64,45 +44,40 @@
                 "args0": [{"type": "field_number", "name": "STEPS", "value": 10}],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": 230,
-                "tooltip": "Moves forward",
-                "helpUrl": ""
+                "colour": 230
             },
             {
                 "type": "change_color",
                 "message0": "change color",
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": 120,
-                "tooltip": "Changes color",
-                "helpUrl": ""
+                "colour": 120
             },
             {
                 "type": "play_sound",
                 "message0": "play sound",
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": 290,
-                "tooltip": "Plays a sound",
-                "helpUrl": ""
+                "colour": 290
             }
         ]);
 
-        // Inject Blockly Workspace
+        // Inject Blockly workspace
         var workspace = Blockly.inject('blocklyDiv', {
             toolbox: document.getElementById('toolboxXML')
         });
 
         function runCode() {
             var jsCode = Blockly.JavaScript.workspaceToCode(workspace);
-            document.getElementById('codeOutput').textContent = jsCode;
+            document.getElementById("codeOutput").textContent = jsCode;
 
-            // Live preview in iframe
-            var iframe = document.getElementById('livePreview').contentWindow.document;
+            // Live Preview
+            var iframe = document.getElementById("livePreview").contentWindow.document;
             iframe.open();
-            iframe.write(`<script>${jsCode}</script>`);
+            iframe.write(`<script>${jsCode}<\/script>`);
             iframe.close();
         }
     </script>
+
 </body>
 </html>
