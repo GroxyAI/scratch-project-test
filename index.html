@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
-    <title>Scratch Playground</title>
+    <title>Scratch Clone</title>
     <style>
         body { display: grid; grid-template-columns: 25% 50% 25%; grid-template-rows: 10% 90%; height: 100vh; margin: 0; font-family: Arial, sans-serif; }
         #toolbar { grid-column: span 3; background: #ffcc00; padding: 10px; text-align: center; font-weight: bold; }
@@ -12,18 +12,24 @@
         #blocklyDiv { border: 5px solid #000; background: #fff; overflow: hidden; }
         #stage { background: #87CEEB; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         #sprite { width: 100px; position: absolute; transition: 0.5s; cursor: grab; }
+        #saveLoadButtons { text-align: center; padding: 10px; }
     </style>
 </head>
 <body>
 
     <!-- Toolbar -->
-    <div id="toolbar">Scratch Playground - Static Edition</div>
+    <div id="toolbar">Scratch Clone - Blockly Edition</div>
 
     <!-- Sidebar: Blocks -->
     <div id="toolbox">
         <h2>Scratch Blocks</h2>
         <xml id="toolboxXML">
             <block type="move_sprite"></block>
+            <block type="turn_sprite"></block>
+            <block type="jump_sprite"></block>
+            <block type="change_background"></block>
+            <block type="repeat_loop"></block>
+            <block type="if_condition"></block>
             <block type="set_env_variable"></block>
         </xml>
     </div>
@@ -36,6 +42,12 @@
         <img id="sprite" src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg" alt="Scratch Cat">
     </div>
 
+    <!-- Save/Load Section -->
+    <div id="saveLoadButtons">
+        <button onclick="saveProject()">Save Project</button>
+        <button onclick="loadProject()">Load Project</button>
+    </div>
+
     <script>
         // Define Scratch-like Blocks
         Blockly.defineBlocksWithJsonArray([
@@ -46,6 +58,46 @@
                 "previousStatement": null,
                 "nextStatement": null,
                 "colour": 230
+            },
+            {
+                "type": "turn_sprite",
+                "message0": "rotate sprite %1 degrees",
+                "args0": [{ "type": "field_angle", "name": "ANGLE", "value": 90 }],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": 180
+            },
+            {
+                "type": "jump_sprite",
+                "message0": "jump sprite %1 pixels",
+                "args0": [{ "type": "field_number", "name": "HEIGHT", "value": 100 }],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": 150
+            },
+            {
+                "type": "change_background",
+                "message0": "set background color to %1",
+                "args0": [{ "type": "field_colour", "name": "COLOR", "colour": "#ffcc00" }],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": 100
+            },
+            {
+                "type": "repeat_loop",
+                "message0": "repeat %1 times",
+                "args0": [{ "type": "field_number", "name": "TIMES", "value": 5 }],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": 160
+            },
+            {
+                "type": "if_condition",
+                "message0": "if %1 then",
+                "args0": [{ "type": "field_boolean", "name": "CONDITION", "checked": true }],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": 180
             },
             {
                 "type": "set_env_variable",
@@ -74,6 +126,36 @@
         function runCode() {
             var jsCode = Blockly.JavaScript.workspaceToCode(workspace);
             eval(jsCode);
+        }
+
+        // Enable Dragging of Sprite
+        let sprite = document.getElementById("sprite");
+        sprite.addEventListener("mousedown", (e) => {
+            document.onmousemove = function(event) {
+                sprite.style.left = event.clientX - 50 + "px";
+                sprite.style.top = event.clientY - 50 + "px";
+            };
+        });
+        document.addEventListener("mouseup", () => {
+            document.onmousemove = null;
+        });
+
+        // Save & Load Project Functions
+        function saveProject() {
+            const xmlText = Blockly.Xml.domToText(Blockly.Xml.workspaceToDom(workspace));
+            localStorage.setItem("scratch_project", xmlText);
+            alert("Project saved successfully!");
+        }
+
+        function loadProject() {
+            const xmlText = localStorage.getItem("scratch_project");
+            if (xmlText) {
+                const xmlDom = Blockly.Xml.textToDom(xmlText);
+                Blockly.Xml.clearWorkspaceAndLoadFromXml(xmlDom, workspace);
+                alert("Project loaded successfully!");
+            } else {
+                alert("No saved project found.");
+            }
         }
     </script>
 
