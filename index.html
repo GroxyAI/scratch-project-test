@@ -13,6 +13,7 @@
         h2 { color: white; background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet); padding: 10px; }
         #codeOutput { padding: 10px; border: 1px solid #ccc; text-align: left; }
         iframe { width: 100%; height: 100%; border: none; background: white; }
+        #sprite { position: absolute; left: 50px; top: 200px; width: 100px; transition: 0.5s; }
     </style>
 </head>
 <body>
@@ -20,9 +21,10 @@
     <div id="toolbox">
         <h2>Scratch Blocks</h2>
         <xml id="toolboxXML">
-            <block type="move_forward"></block>
-            <block type="change_color"></block>
-            <block type="play_sound"></block>
+            <block type="move_sprite"></block>
+            <block type="turn_sprite"></block>
+            <block type="jump_sprite"></block>
+            <block type="fullscreen_mode"></block>
         </xml>
     </div>
 
@@ -39,26 +41,35 @@
         // Define custom Scratch-like blocks
         Blockly.defineBlocksWithJsonArray([
             {
-                "type": "move_forward",
-                "message0": "move forward %1 steps",
-                "args0": [{"type": "field_number", "name": "STEPS", "value": 10}],
+                "type": "move_sprite",
+                "message0": "move sprite %1 steps",
+                "args0": [{ "type": "field_number", "name": "STEPS", "value": 50 }],
                 "previousStatement": null,
                 "nextStatement": null,
                 "colour": 230
             },
             {
-                "type": "change_color",
-                "message0": "change color",
+                "type": "turn_sprite",
+                "message0": "turn sprite %1 degrees",
+                "args0": [{ "type": "field_angle", "name": "ANGLE", "value": 90 }],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": 120
+                "colour": 180
             },
             {
-                "type": "play_sound",
-                "message0": "play sound",
+                "type": "jump_sprite",
+                "message0": "jump sprite %1 pixels",
+                "args0": [{ "type": "field_number", "name": "HEIGHT", "value": 100 }],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": 290
+                "colour": 150
+            },
+            {
+                "type": "fullscreen_mode",
+                "message0": "toggle fullscreen",
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": 100
             }
         ]);
 
@@ -71,13 +82,22 @@
             var jsCode = Blockly.JavaScript.workspaceToCode(workspace);
             document.getElementById("codeOutput").textContent = jsCode;
 
-            // Live Preview
             var iframe = document.getElementById("livePreview").contentWindow.document;
             iframe.open();
             iframe.write(`<script>${jsCode}<\/script>`);
             iframe.close();
         }
+
+        // Toggle Fullscreen
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "f") {
+                document.documentElement.requestFullscreen();
+            }
+        });
     </script>
+
+    <!-- Add Scratch-like Cat -->
+    <img id="sprite" src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg" alt="Scratch Cat">
 
 </body>
 </html>
