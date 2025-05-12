@@ -6,43 +6,42 @@
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
     <title>Scratch Playground</title>
     <style>
-        body { display: flex; height: 100vh; margin: 0; font-family: Arial, sans-serif; }
-        #toolbox { width: 25%; background: #f0f0f0; padding: 10px; }
-        #blocklyDiv { width: 50%; height: 100vh; border: 10px solid; border-image: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet) 1; }
-        #preview { width: 25%; display: flex; flex-direction: column; text-align: center; }
-        h2 { color: white; background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet); padding: 10px; }
-        #codeOutput { padding: 10px; border: 1px solid #ccc; text-align: left; }
-        iframe { width: 100%; height: 100%; border: none; background: white; }
-        #sprite { position: absolute; left: 50px; top: 200px; width: 100px; transition: 0.5s; }
+        body { display: grid; grid-template-columns: 25% 50% 25%; height: 100vh; margin: 0; font-family: Arial, sans-serif; }
+        #toolbox { padding: 10px; background: #f0f0f0; }
+        #blocklyDiv { border: 5px solid; border-image: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet) 1; }
+        #stage { background: lightblue; position: relative; display: flex; align-items: center; justify-content: center; }
+        #sprite { width: 100px; position: absolute; transition: 0.5s; }
+        h2 { background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet); padding: 10px; color: white; }
     </style>
 </head>
 <body>
 
+    <!-- Toolbox Sidebar -->
     <div id="toolbox">
         <h2>Scratch Blocks</h2>
         <xml id="toolboxXML">
             <block type="move_sprite"></block>
             <block type="turn_sprite"></block>
             <block type="jump_sprite"></block>
-            <block type="fullscreen_mode"></block>
+            <block type="change_background"></block>
         </xml>
     </div>
 
+    <!-- Coding Area -->
     <div id="blocklyDiv"></div>
 
-    <div id="preview">
-        <h2>Made with Scratch Playground</h2>
-        <pre id="codeOutput"></pre>
-        <button onclick="runCode()">Run Code</button>
-        <iframe id="livePreview"></iframe>
+    <!-- Stage & Preview Area -->
+    <div id="stage">
+        <h2>Stage Preview</h2>
+        <img id="sprite" src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg" alt="Scratch Cat">
     </div>
 
     <script>
-        // Define custom Scratch-like blocks
+        // Define Scratch-Like Blocks
         Blockly.defineBlocksWithJsonArray([
             {
                 "type": "move_sprite",
-                "message0": "move sprite %1 steps",
+                "message0": "move sprite %1 pixels",
                 "args0": [{ "type": "field_number", "name": "STEPS", "value": 50 }],
                 "previousStatement": null,
                 "nextStatement": null,
@@ -50,7 +49,7 @@
             },
             {
                 "type": "turn_sprite",
-                "message0": "turn sprite %1 degrees",
+                "message0": "rotate sprite %1 degrees",
                 "args0": [{ "type": "field_angle", "name": "ANGLE", "value": 90 }],
                 "previousStatement": null,
                 "nextStatement": null,
@@ -65,39 +64,26 @@
                 "colour": 150
             },
             {
-                "type": "fullscreen_mode",
-                "message0": "toggle fullscreen",
+                "type": "change_background",
+                "message0": "set background color to %1",
+                "args0": [{ "type": "field_colour", "name": "COLOR", "colour": "#ffcc00" }],
                 "previousStatement": null,
                 "nextStatement": null,
                 "colour": 100
             }
         ]);
 
-        // Inject Blockly workspace
+        // Inject Blockly Workspace
         var workspace = Blockly.inject('blocklyDiv', {
             toolbox: document.getElementById('toolboxXML')
         });
 
         function runCode() {
             var jsCode = Blockly.JavaScript.workspaceToCode(workspace);
-            document.getElementById("codeOutput").textContent = jsCode;
-
-            var iframe = document.getElementById("livePreview").contentWindow.document;
-            iframe.open();
-            iframe.write(`<script>${jsCode}<\/script>`);
-            iframe.close();
+            eval(jsCode);
         }
-
-        // Toggle Fullscreen
-        document.addEventListener("keydown", (event) => {
-            if (event.key === "f") {
-                document.documentElement.requestFullscreen();
-            }
-        });
     </script>
-
-    <!-- Add Scratch-like Cat -->
-    <img id="sprite" src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg" alt="Scratch Cat">
 
 </body>
 </html>
+
