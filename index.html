@@ -3,161 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://unpkg.com/blockly/blockly.min.js"></script>
-    <title>Scratch Clone</title>
+    <title>Interactive Solar System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        body { display: grid; grid-template-columns: 25% 50% 25%; grid-template-rows: 10% 90%; height: 100vh; margin: 0; font-family: Arial, sans-serif; }
-        #toolbar { grid-column: span 3; background: #ffcc00; padding: 10px; text-align: center; font-weight: bold; }
-        #toolbox { padding: 10px; background: #f0f0f0; overflow-y: auto; }
-        #blocklyDiv { border: 5px solid #000; background: #fff; overflow: hidden; }
-        #stage { background: #87CEEB; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        #sprite { width: 100px; position: absolute; transition: 0.5s; cursor: grab; }
-        #saveLoadButtons { text-align: center; padding: 10px; }
+        body { margin: 0; overflow: hidden; background: black; }
+        canvas { display: block; }
+        #info { position: absolute; top: 10px; left: 10px; color: white; font-size: 18px; }
     </style>
 </head>
 <body>
-
-    <!-- Toolbar -->
-    <div id="toolbar">Scratch Clone - Blockly Edition</div>
-
-    <!-- Sidebar: Blocks -->
-    <div id="toolbox">
-        <h2>Scratch Blocks</h2>
-        <xml id="toolboxXML">
-            <block type="move_sprite"></block>
-            <block type="turn_sprite"></block>
-            <block type="jump_sprite"></block>
-            <block type="change_background"></block>
-            <block type="repeat_loop"></block>
-            <block type="if_condition"></block>
-            <block type="set_env_variable"></block>
-        </xml>
-    </div>
-
-    <!-- Blockly Coding Area -->
-    <div id="blocklyDiv"></div>
-
-    <!-- Stage: Sprite Area -->
-    <div id="stage">
-        <img id="sprite" src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg" alt="Scratch Cat">
-    </div>
-
-    <!-- Save/Load Section -->
-    <div id="saveLoadButtons">
-        <button onclick="saveProject()">Save Project</button>
-        <button onclick="loadProject()">Load Project</button>
-    </div>
+    <div id="info">Click planets or stars for info! Press 'F' for fullscreen.</div>
 
     <script>
-        // Define Scratch-like Blocks
-        Blockly.defineBlocksWithJsonArray([
-            {
-                "type": "move_sprite",
-                "message0": "move sprite %1 pixels",
-                "args0": [{ "type": "field_number", "name": "STEPS", "value": 50 }],
-                "previousStatement": null,
-                "nextStatement": null,
-                "colour": 230
-            },
-            {
-                "type": "turn_sprite",
-                "message0": "rotate sprite %1 degrees",
-                "args0": [{ "type": "field_angle", "name": "ANGLE", "value": 90 }],
-                "previousStatement": null,
-                "nextStatement": null,
-                "colour": 180
-            },
-            {
-                "type": "jump_sprite",
-                "message0": "jump sprite %1 pixels",
-                "args0": [{ "type": "field_number", "name": "HEIGHT", "value": 100 }],
-                "previousStatement": null,
-                "nextStatement": null,
-                "colour": 150
-            },
-            {
-                "type": "change_background",
-                "message0": "set background color to %1",
-                "args0": [{ "type": "field_colour", "name": "COLOR", "colour": "#ffcc00" }],
-                "previousStatement": null,
-                "nextStatement": null,
-                "colour": 100
-            },
-            {
-                "type": "repeat_loop",
-                "message0": "repeat %1 times",
-                "args0": [{ "type": "field_number", "name": "TIMES", "value": 5 }],
-                "previousStatement": null,
-                "nextStatement": null,
-                "colour": 160
-            },
-            {
-                "type": "if_condition",
-                "message0": "if %1 then",
-                "args0": [{ "type": "field_boolean", "name": "CONDITION", "checked": true }],
-                "previousStatement": null,
-                "nextStatement": null,
-                "colour": 180
-            },
-            {
-                "type": "set_env_variable",
-                "message0": "set ENV variable %1 = %2",
-                "args0": [
-                    { "type": "field_input", "name": "VAR_NAME", "text": "API_KEY" },
-                    { "type": "field_input", "name": "VAR_VALUE", "text": "your_api_here" }
-                ],
-                "previousStatement": null,
-                "nextStatement": null,
-                "colour": 100
+        // Scene, Camera & Renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Lighting (Sunlight Simulation)
+        const light = new THREE.PointLight(0xffffff, 2, 50);
+        light.position.set(0, 0, 0);
+        scene.add(light);
+
+        // Create Sun (Center of System)
+        function createStar(color, size, position, name, event) {
+            const geometry = new THREE.SphereGeometry(size, 32, 32);
+            const material = new THREE.MeshStandardMaterial({ color, emissive: color });
+            const star = new THREE.Mesh(geometry, material);
+            star.position.set(...position);
+            star.userData = { name, event };
+            scene.add(star);
+            return star;
+        }
+
+        const sun = createStar(0xffcc00, 3, [0, 0, 0], "Sun", "Main Sequence (Stable)");
+        const redGiant = createStar(0xff4500, 2, [8, 0, 0], "Red Giant", "Expanding!");
+        const supernovaStar = createStar(0xff0000, 1.5, [-8, 0, 0], "Supernova", "💥 About to Explode!");
+
+        // Planets with Orbital Motion
+        const planetsData = [
+            { name: "Mercury", texture: "https://threejs.org/examples/textures/planets/mercury.jpg", size: 0.4, distance: 4 },
+            { name: "Venus", texture: "https://threejs.org/examples/textures/planets/venus_atmosphere.jpg", size: 0.9, distance: 6 },
+            { name: "Earth", texture: "https://threejs.org/examples/textures/planets/earth_atmosphere.jpg", size: 1, distance: 8 },
+            { name: "Mars", texture: "https://threejs.org/examples/textures/planets/mars_1k.jpg", size: 0.8, distance: 10 },
+            { name: "Jupiter", texture: "https://threejs.org/examples/textures/planets/jupiter.jpg", size: 2, distance: 14 },
+            { name: "Saturn", texture: "https://threejs.org/examples/textures/planets/saturn.jpg", size: 1.8, distance: 18 },
+            { name: "Uranus", texture: "https://threejs.org/examples/textures/planets/uranus.jpg", size: 1.5, distance: 22 },
+            { name: "Neptune", texture: "https://threejs.org/examples/textures/planets/neptune.jpg", size: 1.3, distance: 26 }
+        ];
+
+        const planets = [];
+        planetsData.forEach(data => {
+            const geometry = new THREE.SphereGeometry(data.size, 32, 32);
+            const texture = new THREE.TextureLoader().load(data.texture);
+            const material = new THREE.MeshStandardMaterial({ map: texture });
+            const planet = new THREE.Mesh(geometry, material);
+            planet.position.x = data.distance;
+            planet.userData = { name: data.name };
+            scene.add(planet);
+            planets.push({ mesh: planet, distance: data.distance, speed: 0.002 + (data.distance * 0.00003) });
+        });
+
+        // Camera Position
+        camera.position.z = 35;
+
+        // Rotation & Orbital Animation
+        function animate() {
+            requestAnimationFrame(animate);
+            sun.rotation.y += 0.002;
+            redGiant.rotation.y += 0.002;
+            supernovaStar.rotation.y += 0.002;
+
+            planets.forEach(planet => {
+                planet.mesh.rotation.y += 0.002;
+                planet.mesh.position.x = Math.cos(Date.now() * planet.speed) * planet.distance;
+                planet.mesh.position.z = Math.sin(Date.now() * planet.speed) * planet.distance;
+            });
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Click Interaction (Planets & Stars)
+        window.addEventListener("click", event => {
+            const mouse = new THREE.Vector2(
+                (event.clientX / window.innerWidth) * 2 - 1,
+                -(event.clientY / window.innerHeight) * 2 + 1
+            );
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(planets.map(p => p.mesh).concat([sun, redGiant, supernovaStar]));
+
+            if (intersects.length > 0) {
+                if (intersects[0].object === supernovaStar) {
+                    alert("💥 Supernova Explosion! Watch it expand.");
+                    explodeSupernova(supernovaStar);
+                } else {
+                    alert(`🌍 You clicked on ${intersects[0].object.userData.name}!`);
+                }
             }
-        ]);
-
-        Blockly.JavaScript['set_env_variable'] = function(block) {
-            var varName = block.getFieldValue('VAR_NAME');
-            var varValue = block.getFieldValue('VAR_VALUE');
-            return `window.${varName} = '${varValue}';\n`;
-        };
-
-        // Inject Blockly Workspace
-        var workspace = Blockly.inject('blocklyDiv', {
-            toolbox: document.getElementById('toolboxXML')
         });
 
-        function runCode() {
-            var jsCode = Blockly.JavaScript.workspaceToCode(workspace);
-            eval(jsCode);
-        }
-
-        // Enable Dragging of Sprite
-        let sprite = document.getElementById("sprite");
-        sprite.addEventListener("mousedown", (e) => {
-            document.onmousemove = function(event) {
-                sprite.style.left = event.clientX - 50 + "px";
-                sprite.style.top = event.clientY - 50 + "px";
-            };
-        });
-        document.addEventListener("mouseup", () => {
-            document.onmousemove = null;
-        });
-
-        // Save & Load Project Functions
-        function saveProject() {
-            const xmlText = Blockly.Xml.domToText(Blockly.Xml.workspaceToDom(workspace));
-            localStorage.setItem("scratch_project", xmlText);
-            alert("Project saved successfully!");
-        }
-
-        function loadProject() {
-            const xmlText = localStorage.getItem("scratch_project");
-            if (xmlText) {
-                const xmlDom = Blockly.Xml.textToDom(xmlText);
-                Blockly.Xml.clearWorkspaceAndLoadFromXml(xmlDom, workspace);
-                alert("Project loaded successfully!");
-            } else {
-                alert("No saved project found.");
+        // Supernova Animation (Expansion)
+        function explodeSupernova(star) {
+            let scale = 1.5;
+            function expand() {
+                if (scale < 6) {
+                    star.scale.set(scale, scale, scale);
+                    scale += 0.1;
+                    requestAnimationFrame(expand);
+                } else {
+                    scene.remove(star);
+                    alert("💥 The supernova has exploded and faded away!");
+                }
             }
+            expand();
         }
+
+        // Fullscreen Toggle (`F` key)
+        document.addEventListener("keydown", event => {
+            if (event.key === "f") {
+                document.documentElement.requestFullscreen();
+            }
+        });
     </script>
-
 </body>
 </html>
