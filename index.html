@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Solar System</title>
+    <title>Realistic Space Simulation</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background: black; }
@@ -42,49 +42,31 @@
         const redGiant = createStar(0xff4500, 2, [8, 0, 0], "Red Giant", "Expanding!");
         const supernovaStar = createStar(0xff0000, 1.5, [-8, 0, 0], "Supernova", "💥 About to Explode!");
 
-        // Planets with Orbital Motion
-        const planetsData = [
-            { name: "Mercury", texture: "https://threejs.org/examples/textures/planets/mercury.jpg", size: 0.4, distance: 4 },
-            { name: "Venus", texture: "https://threejs.org/examples/textures/planets/venus_atmosphere.jpg", size: 0.9, distance: 6 },
-            { name: "Earth", texture: "https://threejs.org/examples/textures/planets/earth_atmosphere.jpg", size: 1, distance: 8 },
-            { name: "Mars", texture: "https://threejs.org/examples/textures/planets/mars_1k.jpg", size: 0.8, distance: 10 },
-            { name: "Jupiter", texture: "https://threejs.org/examples/textures/planets/jupiter.jpg", size: 2, distance: 14 },
-            { name: "Saturn", texture: "https://threejs.org/examples/textures/planets/saturn.jpg", size: 1.8, distance: 18 },
-            { name: "Uranus", texture: "https://threejs.org/examples/textures/planets/uranus.jpg", size: 1.5, distance: 22 },
-            { name: "Neptune", texture: "https://threejs.org/examples/textures/planets/neptune.jpg", size: 1.3, distance: 26 }
-        ];
-
-        const planets = [];
-        planetsData.forEach(data => {
-            const geometry = new THREE.SphereGeometry(data.size, 32, 32);
-            const texture = new THREE.TextureLoader().load(data.texture);
+        // Create Planets
+        function createPlanet(textureURL, size, positionX, name) {
+            const geometry = new THREE.SphereGeometry(size, 32, 32);
+            const texture = new THREE.TextureLoader().load(textureURL);
             const material = new THREE.MeshStandardMaterial({ map: texture });
             const planet = new THREE.Mesh(geometry, material);
-            planet.position.x = data.distance;
-            planet.userData = { name: data.name };
+            planet.position.x = positionX;
+            planet.userData = { name };
             scene.add(planet);
-            planets.push({ mesh: planet, distance: data.distance, speed: 0.002 + (data.distance * 0.00003) });
-        });
-
-        // Camera Position
-        camera.position.z = 35;
-
-        // Rotation & Orbital Animation
-        function animate() {
-            requestAnimationFrame(animate);
-            sun.rotation.y += 0.002;
-            redGiant.rotation.y += 0.002;
-            supernovaStar.rotation.y += 0.002;
-
-            planets.forEach(planet => {
-                planet.mesh.rotation.y += 0.002;
-                planet.mesh.position.x = Math.cos(Date.now() * planet.speed) * planet.distance;
-                planet.mesh.position.z = Math.sin(Date.now() * planet.speed) * planet.distance;
-            });
-
-            renderer.render(scene, camera);
+            return planet;
         }
-        animate();
+
+        const planets = [
+            createPlanet("https://threejs.org/examples/textures/planets/mercury.jpg", 0.4, 4, "Mercury"),
+            createPlanet("https://threejs.org/examples/textures/planets/venus_atmosphere.jpg", 0.9, 6, "Venus"),
+            createPlanet("https://threejs.org/examples/textures/planets/earth_atmosphere.jpg", 1, 8, "Earth"),
+            createPlanet("https://threejs.org/examples/textures/planets/mars_1k.jpg", 0.8, 10, "Mars"),
+            createPlanet("https://threejs.org/examples/textures/planets/jupiter.jpg", 2, 14, "Jupiter"),
+            createPlanet("https://threejs.org/examples/textures/planets/saturn.jpg", 1.8, 18, "Saturn"),
+            createPlanet("https://threejs.org/examples/textures/planets/uranus.jpg", 1.5, 22, "Uranus"),
+            createPlanet("https://threejs.org/examples/textures/planets/neptune.jpg", 1.3, 26, "Neptune")
+        ];
+
+        // Moons (Example: Earth's Moon)
+        const moon = createPlanet("https://threejs.org/examples/textures/planets/moon_1024.jpg", 0.3, 9, "Moon");
 
         // Click Interaction (Planets & Stars)
         window.addEventListener("click", event => {
@@ -94,7 +76,7 @@
             );
             const raycaster = new THREE.Raycaster();
             raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(planets.map(p => p.mesh).concat([sun, redGiant, supernovaStar]));
+            const intersects = raycaster.intersectObjects([...planets, sun, redGiant, supernovaStar, moon]);
 
             if (intersects.length > 0) {
                 if (intersects[0].object === supernovaStar) {
@@ -128,6 +110,21 @@
                 document.documentElement.requestFullscreen();
             }
         });
+
+        // Camera Position
+        camera.position.z = 35;
+
+        // Animation Loop (Static Planets)
+        function animate() {
+            requestAnimationFrame(animate);
+            sun.rotation.y += 0.002;
+            redGiant.rotation.y += 0.002;
+            supernovaStar.rotation.y += 0.002;
+            planets.forEach(planet => planet.rotation.y += 0.002);
+            moon.rotation.y += 0.002;
+            renderer.render(scene, camera);
+        }
+        animate();
     </script>
 </body>
 </html>
